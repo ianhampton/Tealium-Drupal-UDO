@@ -1,0 +1,61 @@
+<?php
+/* Tealium Basic Data Layer
+ * ------------------------
+ * Install alongside the Tealium module (https://drupal.org/project/tealium)
+ * Adds a basic data layer including custom fields.
+ *
+ */
+
+
+/*
+ *  Adds site name, description and page title to all pages.
+ */
+function tealium_basic_data_preprocess_page( &$variables ) {
+	tealium_add_data( 'site_name', variable_get( 'site_name' ) );
+	tealium_add_data( 'site_description', variable_get( 'site_slogan' ) );
+	tealium_add_data( 'page_title', drupal_get_title() );
+}
+
+/*
+ * Adds search results and query term to search pages.
+ */
+function tealium_basic_data_preprocess_search_results( &$variables ) {
+	$search_count = array();
+	foreach ( $variables['results'] as $result ) {
+		$search_count[] = $result;
+	}
+	$search_count = count( $search_count );
+
+	tealium_add_data( 'search_results', $search_count );
+	tealium_add_data( 'search_query', arg( 2 ) );
+}
+
+/*
+ * Adds node details (type, author, date) and any custom field data to nodes.
+ */
+function tealium_basic_data_preprocess_node( &$variables ) {
+	$node = $variables['node'];
+	$is_page = $variables['page'];
+	if ( $is_page && property_exists( $node, 'type' ) ) {
+		$node_type = $node->type;
+		$node_author = user_load( $node->uid );
+
+		tealium_add_data( 'page_type', $node_type );
+		tealium_add_data( 'page_author', $node_author->name );
+		tealium_add_data( 'page_date', format_date( $node->created, 'custom', 'Y/m/d' ) );
+	}
+
+	// Add CCK/custom fields
+	foreach ( $node as $key => $value ) {
+		$exp_key = explode( '_', $key );
+		if ( $exp_key[0] == 'field' ) {
+			$values = array();
+			if ( $value['und'] ) {
+				foreach ( $value['und'] as $item ) {
+					$values[] = $item['value'];
+				}
+				tealium_add_data( $key, implode( ', ', $values ) );
+			}
+		}
+	}
+}
