@@ -5,6 +5,8 @@ Extends the unofficial Tealium Drupal module (https://drupal.org/project/tealium
 
 Automatically adds custom fields to nodes along with some other basic data sources.
 
+Alters the Tealium tag so that it's async and used multi-CDN.
+
 Installation
 ------------
 
