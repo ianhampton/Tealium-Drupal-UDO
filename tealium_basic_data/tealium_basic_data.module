@@ -3,6 +3,7 @@
  * ------------------------
  * Install alongside the Tealium module (https://drupal.org/project/tealium)
  * Adds a basic data layer including custom fields.
+ * Switches to tag to be async/multi-CDN.
  *
  */
 
@@ -59,3 +60,12 @@ function tealium_basic_data_preprocess_node( &$variables ) {
 		}
 	}
 }
+
+/*
+ * Modify the theme registry to use a different template for the 'tealium' module.
+ * Switches to the async/multi-CDN tag.
+ */
+function tealium_basic_data_theme_registry_alter(&$theme_registry) {
+	$theme_registry['tealium']['path'] = drupal_get_path('module', 'tealium_basic_data').'/templates';
+}
+
