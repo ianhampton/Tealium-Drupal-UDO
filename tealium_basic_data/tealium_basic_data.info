@@ -1,7 +1,7 @@
 name = Tealium Basic Data Layer
 description = "Provides a basic data layer for your Drupal site"
 core = 7.x
-version = "7.x-1.0"
+version = "7.x-0.3"
 package = "Statistics"
 dependencies[] = tealium
 files[] = tealium_basic_data.module
