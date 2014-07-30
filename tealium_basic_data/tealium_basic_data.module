@@ -3,7 +3,7 @@
  * ------------------------
  * Install alongside the Tealium module (https://drupal.org/project/tealium)
  * Adds a basic data layer including custom fields.
- * Switches to tag to be async/multi-CDN.
+ * Switches to tag to be async/multi-CDN - REMOVED - standard in v1.2 onwards of the tealium module.
  *
  */
 
@@ -51,76 +51,16 @@ function tealium_basic_data_preprocess_node( &$variables ) {
 		$exp_key = explode( '_', $key );
 		if ( $exp_key[0] == 'field' ) {
 			$values = array();
-			if ( $value['und'] ) {
+			if ( isset( $value['und'] ) ) {
 				foreach ( $value['und'] as $item ) {
-					$values[] = $item['value'];
+					if ( ( isset( $item['value'] ) ) && ( !empty( $item['value'] ) ) ) {
+						$values[] = $item['value'];
+					}
 				}
-				tealium_add_data( $key, implode( ', ', $values ) );
+				if ( !empty( $values ) ) {
+					tealium_add_data( $key, implode( ', ', $values ) );
+				}
 			}
-		}
-	}
-}
-
-/*
- * Modify the theme registry to use a different template for the 'tealium' module.
- * Switches to the async/multi-CDN tag.
- */
-function tealium_basic_data_theme_registry_alter( &$theme_registry ) {
-	$theme_registry['tealium']['path'] = drupal_get_path( 'module', 'tealium_basic_data' ).'/templates';
-}
-
-
-/*
- * Insert the Tealium tag at the top of the page.
- */
-function tealium_basic_data_preprocess_html( &$variables ) {
-	if ( FALSE === is_array( $variables ) ) {
-		return;
-	}
-
-	if ( arg( 0 ) != 'admin' ) {
-
-		if ( FALSE === array_key_exists( 'page', $variables )
-			|| FALSE === is_array( $variables['page'] )
-			|| FALSE === array_key_exists( 'page_top', $variables['page'] )
-			|| FALSE === is_array( $variables['page']['page_top'] )
-		) {
-			$variables['page']['page_top'] = array();
-		}
-
-		$account = variable_get( 'tealium_account', TEALIUM_DEFAULT_ACCOUNT );
-		$profile = variable_get( 'tealium_profile', TEALIUM_DEFAULT_PROFILE );
-		$environment = variable_get( 'tealium_environment', TEALIUM_DEFAULT_ENVIRONMENT );
-
-		$tealium_theme_variables = array(
-			'account' => $account,
-			'profile' => $profile,
-			'environment' => $environment,
-			'data_variables' => tealium_get_data(),
-			'view_variables' => tealium_get_view_data(),
-			'link_variables' => tealium_get_link_data(),
-			'bind_variables' => tealium_get_bind_data(),
-		);
-
-		$variables['page']['page_top']['tealium'] = array(
-			'#markup' => theme( 'tealium', $tealium_theme_variables ),
-			'#weight' => -1000
-		);
-	}
-
-}
-
-/*
- * Remove the Tealium tag added by the 'tealium' module from the bottom of the page.
- */
-function tealium_basic_data_process_html( &$variables ) {
-	if ( arg( 0 ) != 'admin' ) {
-		if ( array_key_exists( 'page_bottom', $variables ) ) {
-			/* 
-			 * Unfortunately because the page regions are rendered at this point we can't just unset the tealium additions.
-			 * Possible workaround might be to increase the weight of this module in relation to the tealium module, then we could use hook_preprocess_html.
-			 */
-			$variables['page_bottom'] = preg_replace( '/<!-- Begin Tealium Integration -->(.|\s)*?<!-- End Tealium Integration -->/', '', $variables['page_bottom'] );
 		}
 	}
 }
